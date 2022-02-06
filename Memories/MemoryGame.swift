@@ -10,7 +10,15 @@ import Foundation
 struct MemoryGame<CardContent> where CardContent: Equatable {
     private(set) var cards : [Card]
     
-    private var indexOfOneAndOnlyFaceUpCard : Int?
+    private var indexOfOneAndOnlyFaceUpCard : Int? {
+        get {
+            // var faceUpCardIndices = cards.indices.filter({ index in cards[index].isFaceUp }) cards[$0].isFaceUp
+            cards.indices.filter({ index in cards[index].isFaceUp }).oneAndOnly
+        }
+        set {
+            cards.indices.forEach { cards[$0].isFaceUp = ($0 == newValue) }
+        }
+    }
     
     mutating func chooseCard(_ card : Card){
         if let chosenIndex = cards.firstIndex(where: { $0.id == card.id }),
@@ -22,19 +30,16 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
                     cards[chosenIndex].isMatched = true
                     cards[potentialMatchedIndex].isMatched = true
                 }
-                indexOfOneAndOnlyFaceUpCard = nil
+                cards[chosenIndex].isFaceUp = true
             } else {
-                for index in cards.indices {
-                    cards[index].isFaceUp = false
-                }
                 indexOfOneAndOnlyFaceUpCard = chosenIndex
             }
-            cards[chosenIndex].isFaceUp.toggle()
+            
         }
     }
     
     init(numberOfPairsOFCards : Int, creatCardContent : (Int) -> CardContent){
-        cards = [Card]()
+        cards = []
         
         for pairIndex in 0...numberOfPairsOFCards-1 {
             let content = creatCardContent(pairIndex)
@@ -44,11 +49,21 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
     }
     
     struct Card: Identifiable {
-        var isFaceUp : Bool = false
-        var isMatched : Bool = false
-        var content : CardContent
-        var id: Int
+        var isFaceUp = false
+        var isMatched = false
+        let content : CardContent
+        let id: Int
     }
-
+    
 }
 
+
+extension Array {
+    var oneAndOnly : Element? {
+        if count == 1 { // self.count
+            return first //self.first
+        } else {
+            return nil
+        }
+    }
+}
